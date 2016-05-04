@@ -1,6 +1,8 @@
 import json
+import sys
 
 from twitter.util import printNicely
+from base64 import b64encode
 from .colors import *
 from .config import *
 
@@ -56,3 +58,20 @@ def add_tweetmode_parameter(kwargs):
     if not c.get('DISABLE_EXTENDED_TWEETS'):
         kwargs['tweet_mode'] = 'extended'
     return kwargs
+
+
+def draw_iterm_image(source):
+    """
+    Inline image drawing in iTerm 2.9+ using a special bash shell escape code
+    """
+    encodedImage = b64encode(source).decode('utf-8')
+    config = {
+        'inline': '1',
+        'height': '{}px'.format(c['IMAGE_MAX_HEIGHT']),
+        'width': 'auto',
+        'preserveAspectRatio': 'true',
+    }
+    imageConfig = ';'.join(['{}={}'.format(k, v) for k, v in config.items()])
+    result = '\033]1337;File={config}:{image}\a\n'.format(config=imageConfig,
+                                                          image=encodedImage)
+    sys.stdout.write(result)
